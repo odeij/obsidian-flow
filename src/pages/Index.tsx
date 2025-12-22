@@ -1,4 +1,3 @@
-import { Suspense, lazy } from 'react';
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
@@ -10,18 +9,11 @@ import Contact from '@/components/Contact';
 import ScrollProgress from '@/components/ScrollProgress';
 import CustomCursor from '@/components/CustomCursor';
 
-const NeuralBackground = lazy(() => import('@/components/NeuralBackground'));
-
 const Index = () => {
   return (
     <div className="noise-overlay relative min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Custom cursor (desktop only) */}
       <CustomCursor />
-
-      {/* Three.js Background */}
-      <Suspense fallback={null}>
-        <NeuralBackground />
-      </Suspense>
 
       {/* Navigation */}
       <Navigation />
