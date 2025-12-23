@@ -89,10 +89,10 @@ function NeuralNodes({ count = 80, mouse }: { count?: number; mouse: React.Mutab
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.08}
+        size={0.12}
         color="#a855f7"
         transparent
-        opacity={0.9}
+        opacity={1}
         sizeAttenuation
         blending={THREE.AdditiveBlending}
       />
@@ -181,7 +181,7 @@ function NeuralConnections({ nodeCount = 80, mouse }: { nodeCount?: number; mous
           itemSize={3}
         />
       </bufferGeometry>
-      <lineBasicMaterial color="#7c3aed" transparent opacity={0.25} blending={THREE.AdditiveBlending} />
+      <lineBasicMaterial color="#7c3aed" transparent opacity={0.5} blending={THREE.AdditiveBlending} />
     </lineSegments>
   );
 }
@@ -207,8 +207,8 @@ function PulsingCore({ mouse }: { mouse: React.MutableRefObject<MouseRef> }) {
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0]}>
-      <sphereGeometry args={[0.15, 32, 32]} />
-      <meshBasicMaterial color="#a855f7" transparent opacity={0.8} />
+      <sphereGeometry args={[0.25, 32, 32]} />
+      <meshBasicMaterial color="#a855f7" transparent opacity={0.9} />
     </mesh>
   );
 }
@@ -231,23 +231,22 @@ export default function HeroNeuralNetwork() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 -z-10">
+    <div ref={containerRef} className="absolute inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 6], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
+        dpr={[1, 2]}
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.3} />
-        <pointLight position={[10, 10, 10]} intensity={0.5} color="#a855f7" />
-        <NeuralNodes count={100} mouse={mouse} />
-        <NeuralConnections nodeCount={100} mouse={mouse} />
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} intensity={0.8} color="#a855f7" />
+        <NeuralNodes count={120} mouse={mouse} />
+        <NeuralConnections nodeCount={120} mouse={mouse} />
         <PulsingCore mouse={mouse} />
       </Canvas>
 
       {/* Gradient overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-background/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/50 pointer-events-none" />
     </div>
   );
 }
