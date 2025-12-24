@@ -1,101 +1,105 @@
-import { motion, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import { experiences } from '@/data/portfolio';
-import { X, Minus, Square, ChevronRight, File, Folder } from 'lucide-react';
+import { X, File, Folder, ChevronRight, ChevronDown } from 'lucide-react';
 
-// VS Code-like syntax highlighting colors
+// VS Code syntax colors
 const syntax = {
-  keyword: 'text-[#C586C0]',      // pink/purple - const, function, etc
-  function: 'text-[#DCDCAA]',      // yellow - function names
-  string: 'text-[#CE9178]',        // orange - strings
-  number: 'text-[#B5CEA8]',        // green - numbers
-  type: 'text-[#4EC9B0]',          // teal - types
-  variable: 'text-[#9CDCFE]',      // light blue - variables
-  property: 'text-[#9CDCFE]',      // light blue - object properties
-  comment: 'text-[#6A9955]',       // green - comments
-  bracket: 'text-[#FFD700]',       // gold - brackets
-  punctuation: 'text-[#D4D4D4]',   // gray - punctuation
-  operator: 'text-[#D4D4D4]',      // gray - operators
+  keyword: 'text-[#C586C0]',
+  function: 'text-[#DCDCAA]',
+  string: 'text-[#CE9178]',
+  number: 'text-[#B5CEA8]',
+  type: 'text-[#4EC9B0]',
+  variable: 'text-[#9CDCFE]',
+  property: 'text-[#9CDCFE]',
+  comment: 'text-[#6A9955]',
+  bracket: 'text-[#FFD700]',
+  punctuation: 'text-[#D4D4D4]',
+  operator: 'text-[#D4D4D4]',
 };
 
-function TypedText({ text, delay = 0, className = '' }: { text: string; delay?: number; className?: string }) {
-  const [displayed, setDisplayed] = useState('');
-  const [started, setStarted] = useState(false);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => setStarted(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-  
-  useEffect(() => {
-    if (!started) return;
-    
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i <= text.length) {
-        setDisplayed(text.slice(0, i));
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 20);
-    
-    return () => clearInterval(interval);
-  }, [text, started]);
-  
-  return <span className={className}>{displayed}</span>;
+interface CodeLineProps {
+  lineNum: number;
+  children: React.ReactNode;
+  isVisible: boolean;
+  isActive?: boolean;
+  typingProgress?: number;
 }
 
-function CodeLine({ lineNum, children, delay = 0 }: { lineNum: number; children: React.ReactNode; delay?: number }) {
-  const [visible, setVisible] = useState(false);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-  
+function CodeLine({ lineNum, children, isVisible, isActive, typingProgress = 1 }: CodeLineProps) {
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: visible ? 1 : 0 }}
-      className="flex group hover:bg-[#2a2d3e] transition-colors"
+      className={`flex transition-all duration-300 ${
+        isActive ? 'bg-[#264f78]/30' : 'hover:bg-[#2a2d3e]'
+      } ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      initial={false}
+      animate={{ 
+        x: isVisible ? 0 : -20,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ duration: 0.3 }}
     >
-      <span className="w-12 text-right pr-4 text-[#858585] select-none text-sm shrink-0 font-mono">
+      <span className={`w-12 text-right pr-4 select-none text-sm shrink-0 font-mono transition-colors ${
+        isActive ? 'text-[#c6c6c6]' : 'text-[#858585]'
+      }`}>
         {lineNum}
       </span>
-      <span className="flex-1 text-sm font-mono whitespace-pre-wrap">
+      <span className="flex-1 text-sm font-mono whitespace-pre-wrap relative">
         {children}
+        {isActive && typingProgress < 1 && (
+          <motion.span 
+            className="inline-block w-0.5 h-4 bg-[#aeafad] ml-0.5"
+            animate={{ opacity: [1, 0] }}
+            transition={{ duration: 0.53, repeat: Infinity }}
+          />
+        )}
       </span>
     </motion.div>
   );
 }
 
-function ExperienceCode({ experience, startLine, baseDelay }: { 
-  experience: typeof experiences[0]; 
+interface ExperienceBlockProps {
+  experience: typeof experiences[0];
   startLine: number;
-  baseDelay: number;
-}) {
-  const lineDelay = 80;
-  let line = startLine;
+  scrollProgress: number;
+  blockIndex: number;
+  totalBlocks: number;
+}
+
+function ExperienceBlock({ experience, startLine, scrollProgress, blockIndex, totalBlocks }: ExperienceBlockProps) {
+  // Each block takes up a portion of scroll
+  const blockSize = 1 / (totalBlocks + 1);
+  const blockStart = blockIndex * blockSize;
+  const blockEnd = (blockIndex + 1) * blockSize;
   
+  // Local progress within this block (0 to 1)
+  const localProgress = Math.max(0, Math.min(1, (scrollProgress - blockStart) / blockSize));
+  
+  // Total lines in this block
+  const totalLines = 14 + experience.achievements.length + (experience.department ? 1 : 0);
+  const visibleLines = Math.ceil(localProgress * totalLines);
+  
+  let line = startLine;
+  const isBlockActive = scrollProgress >= blockStart && scrollProgress <= blockEnd;
+
   return (
-    <>
+    <div className={`transition-all duration-500 ${isBlockActive ? 'scale-100' : 'scale-[0.98] opacity-70'}`}>
       {/* Object opening */}
-      <CodeLine lineNum={line++} delay={baseDelay}>
-        <span className={syntax.bracket}>{'{'}</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= 1} isActive={isBlockActive && visibleLines === 1}>
+        {'  '}<span className={syntax.bracket}>{'{'}</span>
       </CodeLine>
       
       {/* Role */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay}>
-        {'  '}<span className={syntax.property}>role</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= 2} isActive={isBlockActive && visibleLines === 2}>
+        {'    '}<span className={syntax.property}>role</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.string}>"{experience.role}"</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
       
       {/* Company */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 2}>
-        {'  '}<span className={syntax.property}>company</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= 3} isActive={isBlockActive && visibleLines === 3}>
+        {'    '}<span className={syntax.property}>company</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.string}>"{experience.company}"</span>
         <span className={syntax.punctuation}>,</span>
@@ -103,8 +107,8 @@ function ExperienceCode({ experience, startLine, baseDelay }: {
       
       {/* Department */}
       {experience.department && (
-        <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 3}>
-          {'  '}<span className={syntax.property}>department</span>
+        <CodeLine lineNum={line++} isVisible={visibleLines >= 4} isActive={isBlockActive && visibleLines === 4}>
+          {'    '}<span className={syntax.property}>department</span>
           <span className={syntax.punctuation}>:</span>{' '}
           <span className={syntax.string}>"{experience.department}"</span>
           <span className={syntax.punctuation}>,</span>
@@ -112,61 +116,83 @@ function ExperienceCode({ experience, startLine, baseDelay }: {
       )}
       
       {/* Period */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 4}>
-        {'  '}<span className={syntax.property}>period</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= (experience.department ? 5 : 4)} isActive={isBlockActive && visibleLines === (experience.department ? 5 : 4)}>
+        {'    '}<span className={syntax.property}>period</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.string}>"{experience.period}"</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
       
       {/* Location */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 5}>
-        {'  '}<span className={syntax.property}>location</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= (experience.department ? 6 : 5)} isActive={isBlockActive && visibleLines === (experience.department ? 6 : 5)}>
+        {'    '}<span className={syntax.property}>location</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.string}>"{experience.location}"</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
       
-      {/* Type */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 6}>
-        {'  '}<span className={syntax.property}>type</span>
+      {/* Type badge */}
+      <CodeLine lineNum={line++} isVisible={visibleLines >= (experience.department ? 7 : 6)} isActive={isBlockActive && visibleLines === (experience.department ? 7 : 6)}>
+        {'    '}<span className={syntax.property}>type</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.type}>{experience.type}</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
       
       {/* Achievements comment */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 7}>
-        {'  '}<span className={syntax.comment}>// Key achievements</span>
+      <CodeLine lineNum={line++} isVisible={visibleLines >= (experience.department ? 8 : 7)} isActive={isBlockActive && visibleLines === (experience.department ? 8 : 7)}>
+        {'    '}<span className={syntax.comment}>// Key achievements</span>
       </CodeLine>
       
-      {/* Achievements array */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * 8}>
-        {'  '}<span className={syntax.property}>achievements</span>
+      {/* Achievements array opening */}
+      <CodeLine lineNum={line++} isVisible={visibleLines >= (experience.department ? 9 : 8)} isActive={isBlockActive && visibleLines === (experience.department ? 9 : 8)}>
+        {'    '}<span className={syntax.property}>achievements</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.bracket}>[</span>
       </CodeLine>
       
-      {experience.achievements.map((achievement, i) => (
-        <CodeLine key={i} lineNum={line++} delay={baseDelay + lineDelay * (9 + i)}>
-          {'    '}<span className={syntax.string}>"{achievement}"</span>
-          {i < experience.achievements.length - 1 && <span className={syntax.punctuation}>,</span>}
-        </CodeLine>
-      ))}
+      {/* Achievement items */}
+      {experience.achievements.map((achievement, i) => {
+        const achievementLineNum = experience.department ? 10 + i : 9 + i;
+        return (
+          <CodeLine 
+            key={i} 
+            lineNum={line++} 
+            isVisible={visibleLines >= achievementLineNum}
+            isActive={isBlockActive && visibleLines === achievementLineNum}
+          >
+            {'      '}<span className={syntax.string}>"{achievement}"</span>
+            {i < experience.achievements.length - 1 && <span className={syntax.punctuation}>,</span>}
+          </CodeLine>
+        );
+      })}
       
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * (9 + experience.achievements.length)}>
-        {'  '}<span className={syntax.bracket}>]</span>
+      {/* Achievements array closing */}
+      <CodeLine 
+        lineNum={line++} 
+        isVisible={visibleLines >= (experience.department ? 10 : 9) + experience.achievements.length}
+        isActive={isBlockActive && visibleLines === (experience.department ? 10 : 9) + experience.achievements.length}
+      >
+        {'    '}<span className={syntax.bracket}>]</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
       
       {/* Technologies comment */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * (10 + experience.achievements.length)}>
-        {'  '}<span className={syntax.comment}>// Tech stack used</span>
+      <CodeLine 
+        lineNum={line++} 
+        isVisible={visibleLines >= (experience.department ? 11 : 10) + experience.achievements.length}
+        isActive={isBlockActive && visibleLines === (experience.department ? 11 : 10) + experience.achievements.length}
+      >
+        {'    '}<span className={syntax.comment}>// Tech stack</span>
       </CodeLine>
       
       {/* Technologies */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * (11 + experience.achievements.length)}>
-        {'  '}<span className={syntax.property}>technologies</span>
+      <CodeLine 
+        lineNum={line++} 
+        isVisible={visibleLines >= (experience.department ? 12 : 11) + experience.achievements.length}
+        isActive={isBlockActive && visibleLines === (experience.department ? 12 : 11) + experience.achievements.length}
+      >
+        {'    '}<span className={syntax.property}>technologies</span>
         <span className={syntax.punctuation}>:</span>{' '}
         <span className={syntax.bracket}>[</span>
         {experience.technologies.map((tech, i) => (
@@ -179,81 +205,72 @@ function ExperienceCode({ experience, startLine, baseDelay }: {
       </CodeLine>
       
       {/* Object closing */}
-      <CodeLine lineNum={line++} delay={baseDelay + lineDelay * (12 + experience.achievements.length)}>
-        <span className={syntax.bracket}>{'}'}</span>
+      <CodeLine 
+        lineNum={line++} 
+        isVisible={visibleLines >= totalLines}
+        isActive={isBlockActive && visibleLines === totalLines}
+      >
+        {'  '}<span className={syntax.bracket}>{'}'}</span>
         <span className={syntax.punctuation}>,</span>
       </CodeLine>
-    </>
+    </div>
   );
 }
 
-function VSCodeWindow({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState(0);
-  
+function VSCodeWindow({ children, scrollProgress }: { children: React.ReactNode; scrollProgress: number }) {
   return (
     <div className="rounded-lg overflow-hidden border border-[#3c3c3c] shadow-2xl bg-[#1e1e1e]">
       {/* Title bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#323233] border-b border-[#3c3c3c]">
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
-            <button className="w-3 h-3 rounded-full bg-[#ff5f57] hover:brightness-110 transition-all" />
-            <button className="w-3 h-3 rounded-full bg-[#febc2e] hover:brightness-110 transition-all" />
-            <button className="w-3 h-3 rounded-full bg-[#28c840] hover:brightness-110 transition-all" />
+            <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+            <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+            <div className="w-3 h-3 rounded-full bg-[#28c840]" />
           </div>
         </div>
-        <span className="text-xs text-[#8c8c8c] font-mono">experience.ts — Odei Jamaleddine</span>
+        <span className="text-xs text-[#8c8c8c] font-mono">experience.ts — Visual Studio Code</span>
         <div className="w-16" />
       </div>
       
       {/* Tabs */}
       <div className="flex bg-[#252526] border-b border-[#3c3c3c]">
-        <div 
-          className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border-r border-[#3c3c3c] cursor-pointer"
-        >
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border-r border-[#3c3c3c]">
           <File className="w-4 h-4 text-[#519aba]" />
           <span className="text-sm text-[#d4d4d4]">experience.ts</span>
-          <X className="w-3 h-3 text-[#8c8c8c] hover:text-white transition-colors" />
+          <X className="w-3 h-3 text-[#8c8c8c] hover:text-white transition-colors cursor-pointer" />
         </div>
-        <div 
-          className="flex items-center gap-2 px-4 py-2 hover:bg-[#2a2d2e] cursor-pointer transition-colors"
-        >
+        <div className="flex items-center gap-2 px-4 py-2 hover:bg-[#2a2d2e] cursor-pointer transition-colors">
           <File className="w-4 h-4 text-[#e37933]" />
           <span className="text-sm text-[#8c8c8c]">projects.ts</span>
         </div>
       </div>
       
-      {/* Main content area */}
+      {/* Main content */}
       <div className="flex">
-        {/* Sidebar - File explorer */}
+        {/* Sidebar */}
         <div className="w-48 bg-[#252526] border-r border-[#3c3c3c] hidden md:block">
           <div className="px-2 py-2 text-xs text-[#8c8c8c] uppercase tracking-wider">
             Explorer
           </div>
           <div className="px-2">
             <div className="flex items-center gap-1 py-1 text-sm text-[#d4d4d4]">
-              <ChevronRight className="w-4 h-4" />
+              <ChevronDown className="w-4 h-4" />
               <Folder className="w-4 h-4 text-[#dcb67a]" />
-              <span>src</span>
+              <span>career</span>
             </div>
             <div className="ml-4">
-              <div className="flex items-center gap-1 py-1 text-sm text-[#d4d4d4]">
-                <ChevronRight className="w-4 h-4" />
-                <Folder className="w-4 h-4 text-[#dcb67a]" />
-                <span>data</span>
+              <div className="flex items-center gap-1 py-1 text-sm bg-[#37373d] rounded px-1">
+                <File className="w-4 h-4 text-[#519aba]" />
+                <span>experience.ts</span>
               </div>
-              <div className="ml-4">
-                <div className="flex items-center gap-1 py-1 text-sm bg-[#37373d] rounded px-1">
-                  <File className="w-4 h-4 text-[#519aba]" />
-                  <span>experience.ts</span>
-                </div>
-                <div className="flex items-center gap-1 py-1 text-sm text-[#8c8c8c]">
-                  <File className="w-4 h-4 text-[#e37933]" />
-                  <span>projects.ts</span>
-                </div>
-                <div className="flex items-center gap-1 py-1 text-sm text-[#8c8c8c]">
-                  <File className="w-4 h-4 text-[#519aba]" />
-                  <span>skills.ts</span>
-                </div>
+              <div className="flex items-center gap-1 py-1 text-sm text-[#8c8c8c]">
+                <File className="w-4 h-4 text-[#e37933]" />
+                <span>projects.ts</span>
+              </div>
+              <div className="flex items-center gap-1 py-1 text-sm text-[#8c8c8c]">
+                <File className="w-4 h-4 text-[#519aba]" />
+                <span>skills.ts</span>
               </div>
             </div>
           </div>
@@ -261,18 +278,33 @@ function VSCodeWindow({ children }: { children: React.ReactNode }) {
         
         {/* Code editor */}
         <div className="flex-1 overflow-x-auto">
-          <div className="p-4 min-w-[500px]">
+          <div className="p-4 min-w-[400px]">
             {children}
           </div>
         </div>
         
-        {/* Minimap */}
-        <div className="w-24 bg-[#1e1e1e] border-l border-[#3c3c3c] hidden lg:block opacity-50">
+        {/* Minimap with progress */}
+        <div className="w-20 bg-[#1e1e1e] border-l border-[#3c3c3c] hidden lg:block relative">
           <div className="p-2 space-y-0.5">
-            {[...Array(30)].map((_, i) => (
-              <div key={i} className="h-0.5 bg-[#4c4c4c] rounded" style={{ width: `${30 + Math.random() * 60}%` }} />
+            {[...Array(40)].map((_, i) => (
+              <div 
+                key={i} 
+                className="h-0.5 rounded transition-colors duration-300" 
+                style={{ 
+                  width: `${30 + Math.random() * 60}%`,
+                  backgroundColor: i / 40 <= scrollProgress ? '#007acc' : '#4c4c4c'
+                }} 
+              />
             ))}
           </div>
+          {/* Viewport indicator */}
+          <motion.div 
+            className="absolute left-1 right-1 bg-[#add6ff]/10 border border-[#add6ff]/30 rounded-sm"
+            style={{
+              top: `${scrollProgress * 80 + 8}px`,
+              height: '40px'
+            }}
+          />
         </div>
       </div>
       
@@ -281,11 +313,17 @@ function VSCodeWindow({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-4">
           <span>main</span>
           <span>TypeScript</span>
+          <motion.span 
+            className="flex items-center gap-1"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            ● Writing...
+          </motion.span>
         </div>
         <div className="flex items-center gap-4">
-          <span>Ln 1, Col 1</span>
+          <span>Ln {Math.floor(scrollProgress * 60)}, Col 1</span>
           <span>UTF-8</span>
-          <span>Spaces: 2</span>
         </div>
       </div>
     </div>
@@ -293,145 +331,165 @@ function VSCodeWindow({ children }: { children: React.ReactNode }) {
 }
 
 export default function Experience() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
   
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+  
+  const [progress, setProgress] = useState(0);
+  
+  useEffect(() => {
+    const unsubscribe = smoothProgress.on("change", (v) => {
+      setProgress(v);
+    });
+    return () => unsubscribe();
+  }, [smoothProgress]);
+
+  // Calculate line numbers
   let currentLine = 1;
   const linesPerExperience = (exp: typeof experiences[0]) => 
     14 + exp.achievements.length + (exp.department ? 1 : 0);
 
+  // Header lines visible based on progress
+  const headerVisible = progress > 0.05;
+  const interfaceVisible = progress > 0.08;
+  const arrayStartVisible = progress > 0.12;
+
   return (
-    <section id="experience" className="py-20 md:py-32 px-4 relative">
-      <div className="max-w-6xl mx-auto">
+    <section 
+      id="experience" 
+      ref={containerRef}
+      className="min-h-[300vh] relative py-20 md:py-32 px-4"
+    >
+      {/* Sticky container */}
+      <div className="sticky top-20 max-w-6xl mx-auto">
         {/* Section header */}
         <motion.div
-          ref={ref}
           initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <span className="text-sm font-mono text-primary uppercase tracking-widest">
             03 — Experience
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mt-4 mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mt-4 mb-4">
             Career<span className="text-gradient">.execute()</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-mono">
-            <span className={syntax.comment}>// Loading career data...</span>
+          <p className="text-muted-foreground font-mono text-sm">
+            <span className={syntax.comment}>// Scroll to write code</span>
           </p>
         </motion.div>
 
         {/* VS Code Editor */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.3, duration: 0.8 }}
+        <VSCodeWindow scrollProgress={progress}>
+          {/* File header */}
+          <CodeLine lineNum={currentLine++} isVisible={headerVisible}>
+            <span className={syntax.comment}>/**</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={headerVisible}>
+            <span className={syntax.comment}> * @file experience.ts</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={headerVisible}>
+            <span className={syntax.comment}> * @description Professional experience timeline</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={headerVisible}>
+            <span className={syntax.comment}> */</span>
+          </CodeLine>
+          
+          <CodeLine lineNum={currentLine++} isVisible={headerVisible}>
+            {' '}
+          </CodeLine>
+          
+          {/* Interface */}
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            <span className={syntax.keyword}>interface</span>{' '}
+            <span className={syntax.type}>Experience</span>{' '}
+            <span className={syntax.bracket}>{'{'}</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            {'  '}<span className={syntax.property}>role</span>
+            <span className={syntax.punctuation}>:</span>{' '}
+            <span className={syntax.type}>string</span>
+            <span className={syntax.punctuation}>;</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            {'  '}<span className={syntax.property}>company</span>
+            <span className={syntax.punctuation}>:</span>{' '}
+            <span className={syntax.type}>string</span>
+            <span className={syntax.punctuation}>;</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            {'  '}<span className={syntax.property}>achievements</span>
+            <span className={syntax.punctuation}>:</span>{' '}
+            <span className={syntax.type}>string[]</span>
+            <span className={syntax.punctuation}>;</span>
+          </CodeLine>
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            <span className={syntax.bracket}>{'}'}</span>
+          </CodeLine>
+          
+          <CodeLine lineNum={currentLine++} isVisible={interfaceVisible}>
+            {' '}
+          </CodeLine>
+          
+          {/* Export const */}
+          <CodeLine lineNum={currentLine++} isVisible={arrayStartVisible}>
+            <span className={syntax.keyword}>export const</span>{' '}
+            <span className={syntax.variable}>experiences</span>
+            <span className={syntax.punctuation}>:</span>{' '}
+            <span className={syntax.type}>Experience[]</span>{' '}
+            <span className={syntax.operator}>=</span>{' '}
+            <span className={syntax.bracket}>[</span>
+          </CodeLine>
+          
+          {/* Experience blocks */}
+          {experiences.map((exp, index) => {
+            const startLine = currentLine;
+            currentLine += linesPerExperience(exp);
+            return (
+              <ExperienceBlock
+                key={exp.id}
+                experience={exp}
+                startLine={startLine}
+                scrollProgress={progress}
+                blockIndex={index}
+                totalBlocks={experiences.length}
+              />
+            );
+          })}
+          
+          {/* Closing */}
+          <CodeLine lineNum={currentLine++} isVisible={progress > 0.85}>
+            <span className={syntax.bracket}>]</span>
+            <span className={syntax.punctuation}>;</span>
+          </CodeLine>
+          
+          <CodeLine lineNum={currentLine++} isVisible={progress > 0.9}>
+            {' '}
+          </CodeLine>
+          
+          <CodeLine lineNum={currentLine++} isVisible={progress > 0.92}>
+            <span className={syntax.keyword}>export default</span>{' '}
+            <span className={syntax.variable}>experiences</span>
+            <span className={syntax.punctuation}>;</span>
+          </CodeLine>
+        </VSCodeWindow>
+        
+        {/* Scroll hint */}
+        <motion.div 
+          className="text-center mt-6 text-muted-foreground/50 text-sm font-mono"
+          animate={{ opacity: progress < 0.3 ? 1 : 0 }}
         >
-          <VSCodeWindow>
-            {/* File header comment */}
-            <CodeLine lineNum={currentLine++} delay={0}>
-              <span className={syntax.comment}>/**</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={50}>
-              <span className={syntax.comment}> * @file experience.ts</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={100}>
-              <span className={syntax.comment}> * @author Odei Jamaleddine</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={150}>
-              <span className={syntax.comment}> * @description Professional experience and career history</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={200}>
-              <span className={syntax.comment}> */</span>
-            </CodeLine>
-            
-            {/* Empty line */}
-            <CodeLine lineNum={currentLine++} delay={250}>
-              {' '}
-            </CodeLine>
-            
-            {/* Interface definition */}
-            <CodeLine lineNum={currentLine++} delay={300}>
-              <span className={syntax.keyword}>interface</span>{' '}
-              <span className={syntax.type}>Experience</span>{' '}
-              <span className={syntax.bracket}>{'{'}</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={350}>
-              {'  '}<span className={syntax.property}>role</span>
-              <span className={syntax.punctuation}>:</span>{' '}
-              <span className={syntax.type}>string</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={400}>
-              {'  '}<span className={syntax.property}>company</span>
-              <span className={syntax.punctuation}>:</span>{' '}
-              <span className={syntax.type}>string</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={450}>
-              {'  '}<span className={syntax.property}>achievements</span>
-              <span className={syntax.punctuation}>:</span>{' '}
-              <span className={syntax.type}>string[]</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={500}>
-              {'  '}<span className={syntax.property}>technologies</span>
-              <span className={syntax.punctuation}>:</span>{' '}
-              <span className={syntax.type}>string[]</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-            <CodeLine lineNum={currentLine++} delay={550}>
-              <span className={syntax.bracket}>{'}'}</span>
-            </CodeLine>
-            
-            {/* Empty line */}
-            <CodeLine lineNum={currentLine++} delay={600}>
-              {' '}
-            </CodeLine>
-            
-            {/* Export statement */}
-            <CodeLine lineNum={currentLine++} delay={650}>
-              <span className={syntax.keyword}>export const</span>{' '}
-              <span className={syntax.variable}>experiences</span>
-              <span className={syntax.punctuation}>:</span>{' '}
-              <span className={syntax.type}>Experience[]</span>{' '}
-              <span className={syntax.operator}>=</span>{' '}
-              <span className={syntax.bracket}>[</span>
-            </CodeLine>
-            
-            {/* Experience objects */}
-            {experiences.map((exp, index) => {
-              const startLine = currentLine;
-              currentLine += linesPerExperience(exp);
-              return (
-                <ExperienceCode 
-                  key={exp.id} 
-                  experience={exp} 
-                  startLine={startLine}
-                  baseDelay={700 + index * 800}
-                />
-              );
-            })}
-            
-            {/* Closing bracket */}
-            <CodeLine lineNum={currentLine++} delay={700 + experiences.length * 800}>
-              <span className={syntax.bracket}>]</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-            
-            {/* Empty line */}
-            <CodeLine lineNum={currentLine++} delay={750 + experiences.length * 800}>
-              {' '}
-            </CodeLine>
-            
-            {/* Export default */}
-            <CodeLine lineNum={currentLine++} delay={800 + experiences.length * 800}>
-              <span className={syntax.keyword}>export default</span>{' '}
-              <span className={syntax.variable}>experiences</span>
-              <span className={syntax.punctuation}>;</span>
-            </CodeLine>
-          </VSCodeWindow>
+          ↓ Scroll to write code ↓
         </motion.div>
       </div>
     </section>
