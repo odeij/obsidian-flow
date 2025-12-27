@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ChevronDown, Github, Linkedin, Mail, Sparkles } from 'lucide-react';
 import { personalInfo } from '@/data/portfolio';
 import { Suspense, useRef } from 'react';
-import HeroNeuralNetwork from './HeroNeuralNetwork';
+import NeuralPointCloud from './NeuralPointCloud';
 
 const letterVariants = {
   hidden: { 
@@ -109,9 +109,9 @@ export default function Hero() {
       ref={containerRef}
       className="relative min-h-screen flex flex-col items-center justify-center section-padding overflow-hidden"
     >
-      {/* Interactive Neural Network Background */}
+      {/* Neural Point-Cloud Core */}
       <Suspense fallback={null}>
-        <HeroNeuralNetwork />
+        <NeuralPointCloud />
       </Suspense>
 
       {/* Ambient glow effects */}
