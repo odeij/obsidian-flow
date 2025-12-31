@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { experiences } from '@/data/portfolio';
-import { File, ChevronDown, Play, Building2, Calendar, MapPin } from 'lucide-react';
+import { File, X, Building2, Calendar, MapPin } from 'lucide-react';
 
 // VS Code syntax colors
 const syntax = {
@@ -67,12 +67,27 @@ function TypewriterLine({ content, lineNum, delay, onComplete }: TypewriterLineP
   );
 }
 
-function InlineCodeEditor({ experience }: { experience: typeof experiences[0] }) {
+function CodeEditorModal({ 
+  experience, 
+  onClose 
+}: { 
+  experience: typeof experiences[0]; 
+  onClose: () => void;
+}) {
   const [key, setKey] = useState(0);
   
   useEffect(() => {
     setKey(prev => prev + 1);
   }, [experience.id]);
+
+  // Close on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const baseDelay = 50;
   const lineDelay = 60;
@@ -80,40 +95,63 @@ function InlineCodeEditor({ experience }: { experience: typeof experiences[0] })
 
   return (
     <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
     >
-      <div className="mt-4 rounded-lg overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e]">
-        {/* Mini title bar */}
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#323233] border-b border-[#3c3c3c]">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      
+      {/* Modal Window */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full max-w-2xl max-h-[80vh] rounded-xl overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e] shadow-2xl shadow-primary/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Title bar */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-[#323233] border-b border-[#3c3c3c]">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <button 
+                onClick={onClose}
+                className="w-3 h-3 rounded-full bg-[#ff5f57] hover:bg-[#ff5f57]/80 transition-colors"
+              />
+              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
             </div>
-            <div className="flex items-center gap-1.5 ml-2">
-              <File className="w-3.5 h-3.5 text-[#519aba]" />
-              <span className="text-xs text-[#d4d4d4] font-mono">
+            <div className="flex items-center gap-2 ml-2">
+              <File className="w-4 h-4 text-[#519aba]" />
+              <span className="text-sm text-[#d4d4d4] font-mono">
                 {experience.company.toLowerCase().replace(/\s+/g, '_')}.ts
               </span>
             </div>
           </div>
-          <motion.span 
-            className="text-[10px] text-[#4ec9b0] font-mono flex items-center gap-1"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4ec9b0]" />
-            typing...
-          </motion.span>
+          <div className="flex items-center gap-3">
+            <motion.span 
+              className="text-xs text-[#4ec9b0] font-mono flex items-center gap-1.5"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#4ec9b0]" />
+              typing...
+            </motion.span>
+            <button 
+              onClick={onClose}
+              className="p-1 rounded hover:bg-[#404040] transition-colors"
+            >
+              <X className="w-4 h-4 text-[#858585]" />
+            </button>
+          </div>
         </div>
         
         {/* Code area */}
-        <div key={key} className="p-3 max-h-[320px] overflow-y-auto space-y-0">
+        <div key={key} className="p-4 max-h-[60vh] overflow-y-auto space-y-0">
           {/* Comment header */}
           <TypewriterLine 
             lineNum={line++} 
@@ -336,120 +374,89 @@ function InlineCodeEditor({ experience }: { experience: typeof experiences[0] })
         </div>
         
         {/* Status bar */}
-        <div className="flex items-center justify-between px-3 py-1 bg-[#007acc] text-white text-[10px]">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-4 py-1.5 bg-[#007acc] text-white text-xs">
+          <div className="flex items-center gap-4">
             <span>TypeScript</span>
             <span>UTF-8</span>
           </div>
           <span>Ln {line - 1}, Col 1</span>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
 
 function ExperienceCard({ 
   experience, 
-  isExpanded, 
+  isActive, 
   onClick 
 }: { 
   experience: typeof experiences[0]; 
-  isExpanded: boolean;
+  isActive: boolean;
   onClick: () => void;
 }) {
   return (
-    <motion.div
-      layout
-      className="w-full"
+    <motion.button
+      onClick={onClick}
+      className={`w-full text-left p-4 md:p-5 rounded-xl border transition-all duration-300 ${
+        isActive 
+          ? 'bg-primary/10 border-primary shadow-lg shadow-primary/20' 
+          : 'bg-card/50 border-border/50 hover:border-primary/50 hover:bg-card'
+      }`}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
     >
-      <motion.button
-        onClick={onClick}
-        className={`w-full text-left p-4 md:p-5 rounded-xl border transition-all duration-300 ${
-          isExpanded 
-            ? 'bg-primary/10 border-primary shadow-lg shadow-primary/20' 
-            : 'bg-card/50 border-border/50 hover:border-primary/50 hover:bg-card'
-        }`}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`px-2 py-0.5 text-xs rounded-full ${
-                experience.type === 'Research' 
-                  ? 'bg-blue-500/20 text-blue-400' 
-                  : experience.type === 'Leadership'
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-purple-500/20 text-purple-400'
-              }`}>
-                {experience.type}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`px-2 py-0.5 text-xs rounded-full ${
+              experience.type === 'Research' 
+                ? 'bg-blue-500/20 text-blue-400' 
+                : experience.type === 'Leadership'
+                ? 'bg-emerald-500/20 text-emerald-400'
+                : 'bg-purple-500/20 text-purple-400'
+            }`}>
+              {experience.type}
+            </span>
+            {experience.department && (
+              <span className="text-xs text-muted-foreground">
+                {experience.department}
               </span>
-              {experience.department && (
-                <span className="text-xs text-muted-foreground">
-                  {experience.department}
-                </span>
-              )}
-            </div>
-            <h3 className="font-semibold text-foreground text-base md:text-lg">
-              {experience.role}
-            </h3>
-            <div className="flex items-center gap-2 mt-1 text-muted-foreground text-sm">
-              <Building2 className="w-4 h-4 shrink-0" />
-              <span>{experience.company}</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-muted-foreground/70 text-xs">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {experience.period}
-              </span>
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                {experience.location}
-              </span>
-            </div>
-          </div>
-          
-          <div className="shrink-0 flex items-center gap-2">
-            {isExpanded ? (
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                className="flex items-center gap-1 text-primary"
-              >
-                <Play className="w-5 h-5 fill-primary" />
-              </motion.div>
-            ) : (
-              <motion.div
-                className="text-muted-foreground"
-                whileHover={{ scale: 1.1 }}
-              >
-                <ChevronDown className="w-5 h-5" />
-              </motion.div>
             )}
           </div>
+          <h3 className="font-semibold text-foreground text-base md:text-lg">
+            {experience.role}
+          </h3>
+          <div className="flex items-center gap-2 mt-1 text-muted-foreground text-sm">
+            <Building2 className="w-4 h-4 shrink-0" />
+            <span>{experience.company}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-muted-foreground/70 text-xs">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {experience.period}
+            </span>
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {experience.location}
+            </span>
+          </div>
         </div>
-      </motion.button>
-      
-      {/* Inline Code Editor - appears directly under the card */}
-      <AnimatePresence>
-        {isExpanded && (
-          <InlineCodeEditor experience={experience} />
-        )}
-      </AnimatePresence>
-    </motion.div>
+        
+        <div className="shrink-0 text-xs text-muted-foreground font-mono">
+          Click to view →
+        </div>
+      </div>
+    </motion.button>
   );
 }
 
 export default function Experience() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  const handleCardClick = (id: number) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+  const [selectedExperience, setSelectedExperience] = useState<typeof experiences[0] | null>(null);
 
   return (
     <section id="experience" className="py-20 md:py-32 px-4 relative">
@@ -469,22 +476,32 @@ export default function Experience() {
             Career<span className="text-gradient">.execute()</span>
           </h2>
           <p className="text-muted-foreground text-sm md:text-base">
-            Click on any experience to watch the code write itself
+            Click on any experience to view the code
           </p>
         </motion.div>
 
-        {/* Experience Cards - stacked vertically with inline editors */}
-        <div className="space-y-4">
+        {/* Experience Cards */}
+        <div className="space-y-3">
           {experiences.map((exp) => (
             <ExperienceCard
               key={exp.id}
               experience={exp}
-              isExpanded={expandedId === exp.id}
-              onClick={() => handleCardClick(exp.id)}
+              isActive={selectedExperience?.id === exp.id}
+              onClick={() => setSelectedExperience(exp)}
             />
           ))}
         </div>
       </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedExperience && (
+          <CodeEditorModal 
+            experience={selectedExperience} 
+            onClose={() => setSelectedExperience(null)} 
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
