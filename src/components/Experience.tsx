@@ -1,85 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { experiences } from '@/data/portfolio';
-import { File, X, Building2, Calendar, MapPin } from 'lucide-react';
+import { X, Building2, Calendar, MapPin, Sparkles, Zap, Award, ChevronRight } from 'lucide-react';
 
-// VS Code syntax colors
-const syntax = {
-  keyword: 'text-[#C586C0]',
-  string: 'text-[#CE9178]',
-  type: 'text-[#4EC9B0]',
-  variable: 'text-[#9CDCFE]',
-  property: 'text-[#9CDCFE]',
-  comment: 'text-[#6A9955]',
-  bracket: 'text-[#FFD700]',
-  punctuation: 'text-[#D4D4D4]',
-  operator: 'text-[#D4D4D4]',
-};
-
-interface TypewriterLineProps {
-  content: React.ReactNode;
-  lineNum: number;
-  delay: number;
-  onComplete?: () => void;
-}
-
-function TypewriterLine({ content, lineNum, delay, onComplete }: TypewriterLineProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showCursor, setShowCursor] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-      setShowCursor(true);
-      
-      const cursorTimer = setTimeout(() => {
-        setShowCursor(false);
-        onComplete?.();
-      }, 250);
-      
-      return () => clearTimeout(cursorTimer);
-    }, delay);
-    
-    return () => clearTimeout(timer);
-  }, [delay, onComplete]);
-
-  return (
-    <motion.div 
-      className="flex hover:bg-[#2a2d3e] transition-colors"
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -10 }}
-      transition={{ duration: 0.12 }}
-    >
-      <span className="w-8 md:w-10 text-right pr-2 md:pr-3 text-[#858585] select-none text-xs shrink-0 font-mono">
-        {lineNum}
-      </span>
-      <span className="flex-1 text-xs font-mono whitespace-pre-wrap">
-        {isVisible && content}
-        {showCursor && (
-          <motion.span 
-            className="inline-block w-0.5 h-3.5 bg-[#aeafad] ml-0.5"
-            animate={{ opacity: [1, 0] }}
-            transition={{ duration: 0.4, repeat: Infinity }}
-          />
-        )}
-      </span>
-    </motion.div>
-  );
-}
-
-function CodeEditorModal({ 
+function DetailModal({ 
   experience, 
   onClose 
 }: { 
   experience: typeof experiences[0]; 
   onClose: () => void;
 }) {
-  const [key, setKey] = useState(0);
-  
-  useEffect(() => {
-    setKey(prev => prev + 1);
-  }, [experience.id]);
-
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -88,10 +18,6 @@ function CodeEditorModal({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
-
-  const baseDelay = 50;
-  const lineDelay = 60;
-  let line = 1;
 
   return (
     <motion.div
@@ -103,283 +29,152 @@ function CodeEditorModal({
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/90 backdrop-blur-md" />
       
       {/* Modal Window */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-2xl max-h-[80vh] rounded-xl overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e] shadow-2xl shadow-primary/10"
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Title bar */}
-        <div className="flex items-center justify-between px-4 py-2.5 bg-[#323233] border-b border-[#3c3c3c]">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <button 
-                onClick={onClose}
-                className="w-3 h-3 rounded-full bg-[#ff5f57] hover:bg-[#ff5f57]/80 transition-colors"
-              />
-              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-            </div>
-            <div className="flex items-center gap-2 ml-2">
-              <File className="w-4 h-4 text-[#519aba]" />
-              <span className="text-sm text-[#d4d4d4] font-mono">
-                {experience.company.toLowerCase().replace(/\s+/g, '_')}.ts
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <motion.span 
-              className="text-xs text-[#4ec9b0] font-mono flex items-center gap-1.5"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <span className="w-2 h-2 rounded-full bg-[#4ec9b0]" />
-              typing...
-            </motion.span>
+        {/* Glow effect */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded-2xl blur-xl opacity-60" />
+        
+        {/* Card */}
+        <div className="relative bg-card/95 backdrop-blur-sm rounded-2xl border border-border/50 overflow-hidden">
+          {/* Header */}
+          <div className="relative px-6 pt-6 pb-4">
+            {/* Close button */}
             <button 
               onClick={onClose}
-              className="p-1 rounded hover:bg-[#404040] transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors group"
             >
-              <X className="w-4 h-4 text-[#858585]" />
+              <X className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
             </button>
+            
+            {/* Type badge */}
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-1.5 mb-4"
+            >
+              <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                experience.type === 'Research' 
+                  ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' 
+                  : experience.type === 'Leadership'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
+              }`}>
+                <Sparkles className="w-3 h-3 inline mr-1" />
+                {experience.type}
+              </span>
+              {experience.department && (
+                <span className="text-xs text-muted-foreground px-2">
+                  {experience.department}
+                </span>
+              )}
+            </motion.div>
+            
+            {/* Title */}
+            <motion.h3 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="text-xl md:text-2xl font-bold text-foreground mb-2"
+            >
+              {experience.role}
+            </motion.h3>
+            
+            {/* Company & Meta */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm"
+            >
+              <span className="flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-primary/70" />
+                {experience.company}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-primary/70" />
+                {experience.period}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-primary/70" />
+                {experience.location}
+              </span>
+            </motion.div>
           </div>
-        </div>
-        
-        {/* Code area */}
-        <div key={key} className="p-4 max-h-[60vh] overflow-y-auto space-y-0">
-          {/* Comment header */}
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay} 
-            content={<span className={syntax.comment}>/**</span>} 
-          />
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay} 
-            content={<span className={syntax.comment}> * {experience.role} @ {experience.company}</span>} 
-          />
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 2} 
-            content={<span className={syntax.comment}> * {experience.period}</span>} 
-          />
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 3} 
-            content={<span className={syntax.comment}> */</span>} 
-          />
           
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 4} 
-            content={<span> </span>} 
-          />
+          {/* Divider */}
+          <div className="mx-6 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           
-          {/* Interface declaration */}
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 5} 
-            content={
-              <>
-                <span className={syntax.keyword}>interface</span>{' '}
-                <span className={syntax.type}>Experience</span>{' '}
-                <span className={syntax.bracket}>{'{'}</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 6} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>role</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.type}>string</span>
-                <span className={syntax.punctuation}>;</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 7} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>achievements</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.type}>string[]</span>
-                <span className={syntax.punctuation}>;</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 8} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>stack</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.type}>string[]</span>
-                <span className={syntax.punctuation}>;</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 9} 
-            content={<span className={syntax.bracket}>{'}'}</span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 10} 
-            content={<span> </span>} 
-          />
-          
-          {/* Const declaration */}
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 11} 
-            content={
-              <>
-                <span className={syntax.keyword}>const</span>{' '}
-                <span className={syntax.variable}>{experience.company.replace(/\s+/g, '').toLowerCase()}</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.type}>Experience</span>{' '}
-                <span className={syntax.operator}>=</span>{' '}
-                <span className={syntax.bracket}>{'{'}</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 12} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>role</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.string}>"{experience.role}"</span>
-                <span className={syntax.punctuation}>,</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 13} 
-            content={<span> </span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 14} 
-            content={<span className={syntax.comment}>{'  '}// Key achievements</span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * 15} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>achievements</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.bracket}>[</span>
-              </>
-            } 
-          />
-          
-          {experience.achievements.map((achievement, i) => (
-            <TypewriterLine 
-              key={i}
-              lineNum={line++} 
-              delay={baseDelay + lineDelay * (16 + i)} 
-              content={
-                <>
-                  {'    '}<span className={syntax.string}>"{achievement}"</span>
-                  {i < experience.achievements.length - 1 && <span className={syntax.punctuation}>,</span>}
-                </>
-              } 
-            />
-          ))}
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (16 + experience.achievements.length)} 
-            content={<>{'  '}<span className={syntax.bracket}>]</span><span className={syntax.punctuation}>,</span></>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (17 + experience.achievements.length)} 
-            content={<span> </span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (18 + experience.achievements.length)} 
-            content={<span className={syntax.comment}>{'  '}// Tech stack</span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (19 + experience.achievements.length)} 
-            content={
-              <>
-                {'  '}<span className={syntax.property}>stack</span>
-                <span className={syntax.punctuation}>:</span>{' '}
-                <span className={syntax.bracket}>[</span>
-                {experience.technologies.map((tech, i) => (
-                  <span key={tech}>
-                    <span className={syntax.string}>"{tech}"</span>
-                    {i < experience.technologies.length - 1 && <span className={syntax.punctuation}>, </span>}
-                  </span>
-                ))}
-                <span className={syntax.bracket}>]</span>
-              </>
-            } 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (20 + experience.achievements.length)} 
-            content={<span className={syntax.bracket}>{'}'}</span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (21 + experience.achievements.length)} 
-            content={<span> </span>} 
-          />
-          
-          <TypewriterLine 
-            lineNum={line++} 
-            delay={baseDelay + lineDelay * (22 + experience.achievements.length)} 
-            content={
-              <>
-                <span className={syntax.keyword}>export default</span>{' '}
-                <span className={syntax.variable}>{experience.company.replace(/\s+/g, '').toLowerCase()}</span>
-                <span className={syntax.punctuation}>;</span>
-              </>
-            } 
-          />
-        </div>
-        
-        {/* Status bar */}
-        <div className="flex items-center justify-between px-4 py-1.5 bg-[#007acc] text-white text-xs">
-          <div className="flex items-center gap-4">
-            <span>TypeScript</span>
-            <span>UTF-8</span>
+          {/* Achievements */}
+          <div className="px-6 py-5">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="flex items-center gap-2 mb-4"
+            >
+              <Award className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Key Achievements</span>
+            </motion.div>
+            
+            <div className="space-y-3">
+              {experience.achievements.map((achievement, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.08 }}
+                  className="flex items-start gap-3 group"
+                >
+                  <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors" />
+                  <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
+                    {achievement}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
-          <span>Ln {line - 1}, Col 1</span>
+          
+          {/* Tech Stack */}
+          <div className="px-6 pb-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-2 mb-3"
+            >
+              <Zap className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Tech Stack</span>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="flex flex-wrap gap-2"
+            >
+              {experience.technologies.map((tech, i) => (
+                <motion.span
+                  key={tech}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + i * 0.05 }}
+                  className="px-3 py-1.5 text-xs font-medium bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg border border-border/50 hover:border-primary/30 transition-all cursor-default"
+                >
+                  {tech}
+                </motion.span>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -496,7 +291,7 @@ export default function Experience() {
       {/* Modal */}
       <AnimatePresence>
         {selectedExperience && (
-          <CodeEditorModal 
+          <DetailModal 
             experience={selectedExperience} 
             onClose={() => setSelectedExperience(null)} 
           />
