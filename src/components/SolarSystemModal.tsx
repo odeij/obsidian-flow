@@ -176,163 +176,90 @@ export default function SolarSystemModal({ onClose }: SolarSystemModalProps) {
             </div>
           </div>
 
-          {/* Solar System - Circular Orbits */}
-          <div className="relative flex items-center justify-center min-h-[500px] py-8">
-            {/* Central Sun (42 Logo) */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+          {/* Solar System */}
+          <div className="relative flex flex-col gap-4">
+            {ranks.map((rank, rankIndex) => (
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+                key={rank.level}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: rankIndex * 0.1 }}
                 className="relative"
               >
-                <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl scale-150" />
-                <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 border-2 border-primary/50 flex items-center justify-center shadow-2xl shadow-primary/30">
-                  <span className="text-xl font-bold text-primary-foreground">42</span>
+                {/* Rank Label */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-16 shrink-0">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-md" />
+                      <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/30 flex items-center justify-center">
+                        <span className="text-sm font-mono font-bold text-primary">R{rank.level}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Orbit Line */}
+                  <div className="flex-1 relative">
+                    <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent" />
+                    
+                    {/* Projects as Planets */}
+                    <div className="relative flex flex-wrap gap-3 py-2">
+                      {rank.projects.map((project, projectIndex) => (
+                        <motion.button
+                          key={project.name}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ 
+                            delay: rankIndex * 0.1 + projectIndex * 0.05,
+                            type: 'spring',
+                            stiffness: 200
+                          }}
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedProject(project)}
+                          onMouseEnter={() => setHoveredProject(project)}
+                          onMouseLeave={() => setHoveredProject(null)}
+                          className={`
+                            relative ${getPlanetSize(project.status)} rounded-full 
+                            ${getStatusColor(project.status)} 
+                            shadow-lg cursor-pointer transition-all duration-300
+                            flex items-center justify-center
+                            ${project.status === 'completed' ? 'ring-2 ring-emerald-400/30' : ''}
+                            ${project.status === 'doing' ? 'ring-2 ring-amber-400/30 animate-pulse' : ''}
+                          `}
+                        >
+                          {/* Planet glow */}
+                          {project.status === 'completed' && (
+                            <div className="absolute inset-0 rounded-full bg-emerald-400/20 blur-md" />
+                          )}
+                          {project.status === 'doing' && (
+                            <div className="absolute inset-0 rounded-full bg-amber-400/20 blur-md" />
+                          )}
+                          
+                          {/* Status icon */}
+                          <span className="relative text-white">
+                            {getStatusIcon(project.status)}
+                          </span>
+
+                          {/* Tooltip */}
+                          <AnimatePresence>
+                            {hoveredProject?.name === project.name && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-background border border-border rounded-lg text-xs whitespace-nowrap z-10"
+                              >
+                                {project.name}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
-            </div>
-
-            {/* Orbital Rings */}
-            {ranks.map((rank, rankIndex) => {
-              const orbitRadius = 70 + rankIndex * 55;
-              const orbitDuration = 30 + rankIndex * 15; // Outer orbits slower
-              const projectCount = rank.projects.length;
-
-              return (
-                <div key={rank.level} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                  {/* Orbit Path */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: rankIndex * 0.1 }}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10"
-                    style={{
-                      width: orbitRadius * 2,
-                      height: orbitRadius * 2,
-                    }}
-                  />
-
-                  {/* Rank Label */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: rankIndex * 0.1 + 0.3 }}
-                    className="absolute text-[10px] font-mono text-primary/50"
-                    style={{
-                      left: `calc(50% + ${orbitRadius}px + 8px)`,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                    }}
-                  >
-                    R{rank.level}
-                  </motion.div>
-
-                  {/* Orbiting Planets Container */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: orbitDuration,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                    className="absolute left-1/2 top-1/2"
-                    style={{
-                      width: orbitRadius * 2,
-                      height: orbitRadius * 2,
-                      marginLeft: -orbitRadius,
-                      marginTop: -orbitRadius,
-                    }}
-                  >
-                    {rank.projects.map((project, projectIndex) => {
-                      const angle = (projectIndex / projectCount) * 360;
-                      const radians = (angle * Math.PI) / 180;
-                      const x = Math.cos(radians) * orbitRadius;
-                      const y = Math.sin(radians) * orbitRadius;
-
-                      return (
-                        <motion.div
-                          key={project.name}
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            delay: rankIndex * 0.1 + projectIndex * 0.05 + 0.2,
-                            type: 'spring',
-                            stiffness: 200,
-                          }}
-                          className="absolute"
-                          style={{
-                            left: `calc(50% + ${x}px)`,
-                            top: `calc(50% + ${y}px)`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          {/* Counter-rotate to keep planet upright */}
-                          <motion.button
-                            animate={{ rotate: -360 }}
-                            transition={{
-                              duration: orbitDuration,
-                              repeat: Infinity,
-                              ease: 'linear',
-                            }}
-                            whileHover={{ scale: 1.3 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedProject(project)}
-                            onMouseEnter={() => setHoveredProject(project)}
-                            onMouseLeave={() => setHoveredProject(null)}
-                            className={`
-                              relative ${getPlanetSize(project.status)} rounded-full 
-                              ${getStatusColor(project.status)} 
-                              shadow-lg cursor-pointer transition-shadow duration-300
-                              flex items-center justify-center
-                              ${project.status === 'completed' ? 'ring-2 ring-emerald-400/30' : ''}
-                              ${project.status === 'doing' ? 'ring-2 ring-amber-400/30' : ''}
-                            `}
-                          >
-                            {/* Planet glow */}
-                            {project.status === 'completed' && (
-                              <div className="absolute inset-0 rounded-full bg-emerald-400/30 blur-md" />
-                            )}
-                            {project.status === 'doing' && (
-                              <motion.div
-                                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                                className="absolute inset-0 rounded-full bg-amber-400/30 blur-md"
-                              />
-                            )}
-
-                            {/* Status icon */}
-                            <span className="relative text-white z-10">
-                              {getStatusIcon(project.status)}
-                            </span>
-
-                            {/* Tooltip */}
-                            <AnimatePresence>
-                              {hoveredProject?.name === project.name && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 5, scale: 0.9 }}
-                                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                                  exit={{ opacity: 0, y: 5, scale: 0.9 }}
-                                  className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-background/95 border border-border rounded-lg text-xs whitespace-nowrap z-50 shadow-xl"
-                                >
-                                  <div className="font-medium">{project.name}</div>
-                                  <div className={`text-[10px] ${
-                                    project.status === 'completed' ? 'text-emerald-400' :
-                                    project.status === 'doing' ? 'text-amber-400' : 'text-muted-foreground'
-                                  }`}>
-                                    {project.status === 'completed' ? '✓ Completed' :
-                                     project.status === 'doing' ? '◐ In Progress' : '○ Upcoming'}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </motion.button>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                </div>
-              );
-            })}
+            ))}
           </div>
 
           {/* Project Detail Panel */}
