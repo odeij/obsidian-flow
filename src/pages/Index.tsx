@@ -29,9 +29,13 @@ const Index = () => {
         {showPortfolio && (
           <motion.div
             className="noise-overlay relative min-h-screen bg-background text-foreground overflow-x-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.5,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }}
           >
             {/* Custom cursor (desktop only) */}
             <CustomCursor />
