@@ -74,11 +74,15 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [phase, setPhase] = useState<'loading' | 'ready' | 'expanding'>('loading');
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Mouse position for interactive effects
+  // Mouse position for interactive effects - all hooks at top level
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
   const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
   const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  
+  // Parallax effect for infinity symbol
+  const parallaxX = useSpring(mouseX, { stiffness: 20, damping: 30 });
+  const parallaxY = useSpring(mouseY, { stiffness: 20, damping: 30 });
 
   // Generate random particles
   const particles = useMemo(() => 
@@ -186,8 +190,8 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                 key="infinity"
                 className="relative"
                 style={{
-                  x: useSpring(mouseX, { stiffness: 20, damping: 30 }).get() * 20 - 10,
-                  y: useSpring(mouseY, { stiffness: 20, damping: 30 }).get() * 20 - 10,
+                  x: parallaxX.get() * 20 - 10,
+                  y: parallaxY.get() * 20 - 10,
                 }}
                 exit={{
                   scale: 0,
