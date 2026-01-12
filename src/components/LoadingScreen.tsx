@@ -1,9 +1,42 @@
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
 interface LoadingScreenProps {
   onComplete: () => void;
 }
+
+// Sound effect using Web Audio API
+const playEnterSound = () => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  
+  // Create a pleasant "whoosh" sound
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  const filter = audioContext.createBiquadFilter();
+  
+  oscillator.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  // Configure oscillator
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+  oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.4);
+  
+  // Configure filter for smoother sound
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(2000, audioContext.currentTime);
+  filter.frequency.exponentialRampToValueAtTime(500, audioContext.currentTime + 0.4);
+  
+  // Configure gain (volume envelope)
+  gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.05);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.5);
+};
 
 // Floating particle component
 const FloatingParticle = ({ delay, duration, size, initialX, initialY }: {
@@ -39,6 +72,13 @@ const FloatingParticle = ({ delay, duration, size, initialX, initialY }: {
 
 const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [phase, setPhase] = useState<'loading' | 'ready' | 'expanding'>('loading');
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Mouse position for interactive effects
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
 
   // Generate random particles
   const particles = useMemo(() => 
@@ -52,6 +92,15 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
     })), []
   );
 
+  // Handle mouse move for interactive gradient
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseX.set((e.clientX - rect.left) / rect.width);
+      mouseY.set((e.clientY - rect.top) / rect.height);
+    }
+  }, [mouseX, mouseY]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('ready');
@@ -62,6 +111,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
 
   const handleClick = () => {
     if (phase === 'ready') {
+      playEnterSound();
       setPhase('expanding');
       setTimeout(onComplete, 1200);
     }
@@ -71,14 +121,24 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
     <AnimatePresence mode="wait">
       {phase !== 'expanding' ? (
         <motion.div
+          ref={containerRef}
           key="loading-screen"
           className="fixed inset-0 z-[100] bg-background flex items-center justify-center cursor-pointer overflow-hidden"
           onClick={handleClick}
+          onMouseMove={handleMouseMove}
           exit={{
             opacity: 0,
             transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.4 }
           }}
         >
+          {/* Interactive gradient that follows mouse */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(600px circle at calc(${smoothMouseX.get() * 100}% ) calc(${smoothMouseY.get() * 100}%), hsl(var(--primary)/0.12) 0%, transparent 60%)`,
+            }}
+          />
+
           {/* Ambient gradient background */}
           <motion.div
             className="absolute inset-0 opacity-30"
@@ -125,6 +185,10 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
               <motion.div
                 key="infinity"
                 className="relative"
+                style={{
+                  x: useSpring(mouseX, { stiffness: 20, damping: 30 }).get() * 20 - 10,
+                  y: useSpring(mouseY, { stiffness: 20, damping: 30 }).get() * 20 - 10,
+                }}
                 exit={{
                   scale: 0,
                   opacity: 0,
@@ -206,7 +270,12 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                   delay: 0.1
                 }}
               >
-                <div className="relative">
+                <motion.div 
+                  className="relative"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  {/* Outer ring */}
                   <motion.div
                     className="absolute rounded-full border border-primary/20"
                     style={{ width: 80, height: 80, left: -28, top: -28 }}
@@ -231,22 +300,55 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                     }}
                   />
                   
+                  {/* The main point */}
                   <motion.div
                     className="w-6 h-6 rounded-full bg-primary shadow-[0_0_40px_hsl(var(--primary)/0.6)]"
                     whileHover={{ 
                       scale: 1.4,
-                      boxShadow: "0 0 60px hsl(var(--primary)/0.9)"
+                      boxShadow: "0 0 80px hsl(var(--primary)/1)"
                     }}
                     whileTap={{ scale: 0.9 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    animate={{
+                      boxShadow: [
+                        "0 0 40px hsl(var(--primary)/0.6)",
+                        "0 0 60px hsl(var(--primary)/0.8)",
+                        "0 0 40px hsl(var(--primary)/0.6)"
+                      ]
+                    }}
                   />
-                </div>
+                  
+                  {/* Hover trail particles */}
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 rounded-full bg-primary/40"
+                      style={{
+                        left: 12,
+                        top: 12,
+                      }}
+                      animate={{
+                        x: [0, Math.cos((i / 6) * Math.PI * 2) * 40],
+                        y: [0, Math.sin((i / 6) * Math.PI * 2) * 40],
+                        opacity: [0, 0.6, 0],
+                        scale: [0, 1, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                        ease: "easeOut",
+                      }}
+                    />
+                  ))}
+                </motion.div>
 
                 <motion.p
                   className="text-muted-foreground/40 text-xs tracking-[0.4em] uppercase font-light"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
+                  whileHover={{ opacity: 0.8, scale: 1.05 }}
                 >
                   Enter
                 </motion.p>
