@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
@@ -8,30 +10,52 @@ import Education from '@/components/Education';
 import Contact from '@/components/Contact';
 import ScrollProgress from '@/components/ScrollProgress';
 import CustomCursor from '@/components/CustomCursor';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const Index = () => {
+  const [showPortfolio, setShowPortfolio] = useState(false);
+
   return (
-    <div className="noise-overlay relative min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Custom cursor (desktop only) */}
-      <CustomCursor />
+    <>
+      {/* Loading Screen */}
+      <AnimatePresence>
+        {!showPortfolio && (
+          <LoadingScreen onComplete={() => setShowPortfolio(true)} />
+        )}
+      </AnimatePresence>
 
-      {/* Navigation */}
-      <Navigation />
+      {/* Portfolio Content */}
+      <AnimatePresence>
+        {showPortfolio && (
+          <motion.div
+            className="noise-overlay relative min-h-screen bg-background text-foreground overflow-x-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            {/* Custom cursor (desktop only) */}
+            <CustomCursor />
 
-      {/* Scroll progress indicator */}
-      <ScrollProgress />
+            {/* Navigation */}
+            <Navigation />
 
-      {/* Main content */}
-      <main>
-        <Hero />
-        <About />
-        <Projects />
-        <Experience />
-        <Skills />
-        <Education />
-        <Contact />
-      </main>
-    </div>
+            {/* Scroll progress indicator */}
+            <ScrollProgress />
+
+            {/* Main content */}
+            <main>
+              <Hero />
+              <About />
+              <Projects />
+              <Experience />
+              <Skills />
+              <Education />
+              <Contact />
+            </main>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
