@@ -1,54 +1,75 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoadingScreenProps {
   onComplete: () => void;
 }
 
-// Floating particle component
+// Interactive floating particle component
 const FloatingParticle = ({ delay, duration, size, initialX, initialY }: {
   delay: number;
   duration: number;
   size: number;
   initialX: number;
   initialY: number;
-}) => (
-  <motion.div
-    className="absolute rounded-full bg-primary/10"
-    style={{
-      width: size,
-      height: size,
-      left: `${initialX}%`,
-      top: `${initialY}%`,
-    }}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{
-      opacity: [0, 0.6, 0.3, 0.6, 0],
-      scale: [0.5, 1, 0.8, 1, 0.5],
-      x: [0, 30, -20, 10, 0],
-      y: [0, -40, -80, -120, -160],
-    }}
-    transition={{
-      duration,
-      delay,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
-  />
-);
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <motion.div
+      className="absolute rounded-full cursor-pointer"
+      style={{
+        width: size,
+        height: size,
+        left: `${initialX}%`,
+        top: `${initialY}%`,
+      }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{
+        opacity: isHovered ? 1 : [0, 0.6, 0.3, 0.6, 0],
+        scale: isHovered ? 2 : [0.5, 1, 0.8, 1, 0.5],
+        x: isHovered ? 0 : [0, 30, -20, 10, 0],
+        y: isHovered ? 0 : [0, -40, -80, -120, -160],
+        boxShadow: isHovered 
+          ? '0 0 30px 8px hsl(var(--primary)/0.8)' 
+          : '0 0 0px 0px transparent',
+      }}
+      transition={{
+        duration: isHovered ? 0.3 : duration,
+        delay: isHovered ? 0 : delay,
+        repeat: isHovered ? 0 : Infinity,
+        ease: "easeInOut",
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <motion.div 
+        className="w-full h-full rounded-full"
+        animate={{
+          background: isHovered 
+            ? 'radial-gradient(circle, hsl(var(--primary)) 0%, hsl(var(--primary)/0.5) 50%, transparent 70%)'
+            : 'radial-gradient(circle, hsl(var(--primary)/0.4) 0%, hsl(var(--primary)/0.1) 50%, transparent 70%)',
+        }}
+        transition={{ duration: 0.3 }}
+      />
+    </motion.div>
+  );
+};
 
 const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [phase, setPhase] = useState<'loading' | 'ready' | 'expanding'>('loading');
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [expandOrigin, setExpandOrigin] = useState({ x: 50, y: 50 });
 
-  // Generate random particles
+  // Generate random particles covering the whole screen
   const particles = useMemo(() => 
-    Array.from({ length: 20 }, (_, i) => ({
+    Array.from({ length: 35 }, (_, i) => ({
       id: i,
       delay: Math.random() * 3,
-      duration: 4 + Math.random() * 4,
-      size: 2 + Math.random() * 4,
+      duration: 5 + Math.random() * 5,
+      size: 3 + Math.random() * 6,
       initialX: Math.random() * 100,
-      initialY: 60 + Math.random() * 40,
+      initialY: Math.random() * 100,
     })), []
   );
 
@@ -62,8 +83,15 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
 
   const handleClick = () => {
     if (phase === 'ready') {
+      // Calculate expand origin from button position
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
+        const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100;
+        setExpandOrigin({ x, y });
+      }
       setPhase('expanding');
-      setTimeout(onComplete, 1200);
+      setTimeout(onComplete, 1400);
     }
   };
 
@@ -72,11 +100,10 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
       {phase !== 'expanding' ? (
         <motion.div
           key="loading-screen"
-          className="fixed inset-0 z-[100] bg-background flex items-center justify-center cursor-pointer overflow-hidden"
-          onClick={handleClick}
+          className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden"
           exit={{
             opacity: 0,
-            transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.4 }
+            transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.8 }
           }}
         >
           {/* Ambient gradient background */}
@@ -114,7 +141,25 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
             }}
           />
 
-          {/* Floating particles */}
+          {/* Tertiary ambient glow */}
+          <motion.div
+            className="absolute inset-0 opacity-15"
+            style={{
+              background: 'radial-gradient(ellipse at 70% 30%, hsl(var(--primary)/0.08) 0%, transparent 60%)',
+            }}
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.15, 0.25, 0.15],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+          />
+
+          {/* Interactive floating particles */}
           {particles.map((particle) => (
             <FloatingParticle key={particle.id} {...particle} />
           ))}
@@ -196,7 +241,8 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
             {phase === 'ready' && (
               <motion.div
                 key="point"
-                className="relative flex flex-col items-center gap-8"
+                ref={buttonRef}
+                className="relative flex flex-col items-center gap-8 cursor-pointer"
                 initial={{ scale: 0, opacity: 0, filter: "blur(10px)" }}
                 animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
                 transition={{ 
@@ -205,8 +251,10 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                   damping: 20,
                   delay: 0.1
                 }}
+                onClick={handleClick}
               >
                 <div className="relative">
+                  {/* Outer pulsing rings */}
                   <motion.div
                     className="absolute rounded-full border border-primary/20"
                     style={{ width: 80, height: 80, left: -28, top: -28 }}
@@ -230,7 +278,20 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
                       delay: 0.5
                     }}
                   />
+                  <motion.div
+                    className="absolute rounded-full border border-primary/10"
+                    style={{ width: 160, height: 160, left: -68, top: -68 }}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: [0.5, 1.2, 0.5], opacity: [0, 0.15, 0] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1
+                    }}
+                  />
                   
+                  {/* Main enter button */}
                   <motion.div
                     className="w-6 h-6 rounded-full bg-primary shadow-[0_0_40px_hsl(var(--primary)/0.6)]"
                     whileHover={{ 
@@ -257,21 +318,60 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
       ) : (
         <motion.div
           key="expanding-overlay"
-          className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+          className="fixed inset-0 z-[100] pointer-events-none overflow-hidden"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
         >
-          {/* Expanding circle reveal */}
+          {/* Full screen expanding circle from click origin */}
           <motion.div
-            className="absolute rounded-full bg-primary"
-            initial={{ width: 24, height: 24, opacity: 1 }}
+            className="absolute rounded-full"
+            style={{
+              left: `${expandOrigin.x}%`,
+              top: `${expandOrigin.y}%`,
+              x: '-50%',
+              y: '-50%',
+              background: 'radial-gradient(circle, hsl(var(--primary)) 0%, hsl(var(--background)) 30%)',
+            }}
+            initial={{ 
+              width: 24, 
+              height: 24, 
+              opacity: 1,
+            }}
             animate={{ 
-              width: '300vmax', 
-              height: '300vmax',
-              opacity: [1, 1, 0]
+              width: '350vmax', 
+              height: '350vmax',
+              opacity: [1, 1, 0],
             }}
             transition={{ 
-              duration: 1.2, 
-              ease: [0.76, 0, 0.24, 1],
-              opacity: { duration: 1.2, times: [0, 0.7, 1] }
+              width: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
+              height: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
+              opacity: { duration: 1.4, times: [0, 0.6, 1], ease: 'easeOut' },
+            }}
+          />
+          
+          {/* Inner glow ring */}
+          <motion.div
+            className="absolute rounded-full border-2 border-primary/50"
+            style={{
+              left: `${expandOrigin.x}%`,
+              top: `${expandOrigin.y}%`,
+              x: '-50%',
+              y: '-50%',
+            }}
+            initial={{ 
+              width: 24, 
+              height: 24, 
+              opacity: 1,
+            }}
+            animate={{ 
+              width: '360vmax', 
+              height: '360vmax',
+              opacity: [1, 0.5, 0],
+            }}
+            transition={{ 
+              width: { duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 },
+              height: { duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 },
+              opacity: { duration: 1.5, times: [0, 0.5, 1], ease: 'easeOut', delay: 0.05 },
             }}
           />
         </motion.div>
