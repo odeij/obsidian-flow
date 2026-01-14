@@ -100,7 +100,8 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
       {phase !== 'expanding' ? (
         <motion.div
           key="loading-screen"
-          className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden cursor-default"
+          style={{ cursor: 'auto' }}
           exit={{
             opacity: 0,
             transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.8 }
@@ -324,56 +325,58 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
         >
           {/* Full screen expanding circle from click origin */}
           <motion.div
-            className="absolute rounded-full"
+            className="absolute rounded-full bg-background"
             style={{
               left: `${expandOrigin.x}%`,
               top: `${expandOrigin.y}%`,
-              x: '-50%',
-              y: '-50%',
-              background: 'radial-gradient(circle, hsl(var(--primary)) 0%, hsl(var(--background)) 30%)',
+              transform: 'translate(-50%, -50%)',
             }}
             initial={{ 
-              width: 24, 
-              height: 24, 
+              scale: 0,
               opacity: 1,
             }}
             animate={{ 
-              width: '350vmax', 
-              height: '350vmax',
+              scale: 1,
               opacity: [1, 1, 0],
             }}
             transition={{ 
-              width: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
-              height: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
-              opacity: { duration: 1.4, times: [0, 0.6, 1], ease: 'easeOut' },
+              scale: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+              opacity: { duration: 1.2, times: [0, 0.7, 1], ease: 'easeOut' },
             }}
-          />
+          >
+            <div 
+              className="rounded-full"
+              style={{ 
+                width: '300vmax', 
+                height: '300vmax',
+                background: 'radial-gradient(circle, hsl(var(--primary)/0.3) 0%, hsl(var(--background)) 20%)',
+              }}
+            />
+          </motion.div>
           
           {/* Inner glow ring */}
           <motion.div
-            className="absolute rounded-full border-2 border-primary/50"
+            className="absolute rounded-full border-2 border-primary/40"
             style={{
               left: `${expandOrigin.x}%`,
               top: `${expandOrigin.y}%`,
-              x: '-50%',
-              y: '-50%',
+              transform: 'translate(-50%, -50%)',
             }}
             initial={{ 
-              width: 24, 
-              height: 24, 
+              scale: 0,
               opacity: 1,
             }}
             animate={{ 
-              width: '360vmax', 
-              height: '360vmax',
+              scale: 1,
               opacity: [1, 0.5, 0],
             }}
             transition={{ 
-              width: { duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 },
-              height: { duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 },
-              opacity: { duration: 1.5, times: [0, 0.5, 1], ease: 'easeOut', delay: 0.05 },
+              scale: { duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.03 },
+              opacity: { duration: 1.3, times: [0, 0.5, 1], ease: 'easeOut', delay: 0.03 },
             }}
-          />
+          >
+            <div style={{ width: '310vmax', height: '310vmax' }} />
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
