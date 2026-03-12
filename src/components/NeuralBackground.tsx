@@ -112,7 +112,7 @@ function ConnectionLines({ count = 100, mouse }: { count?: number; mouse: React.
 
   return (
     <lineSegments ref={linesRef} geometry={geometry}>
-      <lineBasicMaterial color="#7c3aed" transparent opacity={0.15} />
+      <lineBasicMaterial color="#0ea5e9" transparent opacity={0.1} />
     </lineSegments>
   );
 }
