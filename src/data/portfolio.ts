@@ -11,7 +11,7 @@ export const personalInfo = {
 
 export const stats = [
   { label: "Years Coding", value: "3+", suffix: "" },
-  { label: "Research Papers", value: "1", suffix: " submitted" },
+  { label: "Research Papers", value: "1", suffix: " accepted" },
   { label: "Projects Shipped", value: "10", suffix: "+" },
   { label: "Technologies", value: "15", suffix: "+" },
 ];
