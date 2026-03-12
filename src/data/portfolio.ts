@@ -101,7 +101,7 @@ export const projects = [
     id: 1,
     title: "HINT-3D",
     subtitle: "Human-in-the-Loop 3D Segmentation",
-    description: "Test-time adaptation framework enabling real-time 3D semantic segmentation improvements through sparse human feedback. Submitted to ICRA 2026.",
+    description: "Test-time adaptation framework enabling real-time 3D semantic segmentation improvements through sparse human feedback. Accepted at ICRA 2026.",
     category: "Research",
     image: "hint3d",
     technologies: ["PyTorch", "Open3D", "PointSAM", "Docker"],
