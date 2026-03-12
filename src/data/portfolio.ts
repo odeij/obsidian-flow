@@ -57,7 +57,7 @@ export const experiences = [
     period: "Feb 2025 - Present",
     type: "Research",
     achievements: [
-      "First author of HINT-3D, a human-in-the-loop test-time adaptation framework for 3D semantic segmentation, submitted to ICRA 2026",
+      "First author of HINT-3D, a human-in-the-loop test-time adaptation framework for 3D semantic segmentation, accepted at ICRA 2026",
       "Designed backbone-agnostic test-time adaptation system enabling inference-time model updates from sparse human feedback",
       "Achieved segmentation gains (mIoU ~55%→~90%) by integrating PointSAM for 3D error correction",
       "Built scalable CV pipelines in PyTorch and Open3D for large-scale point cloud inference",
