@@ -71,11 +71,11 @@ function Particles({ count = 500, mouse }: { count?: number; mouse: React.Mutabl
       </bufferGeometry>
       <pointsMaterial
         size={0.03}
-        color="#7c3aed"
+        color="#0ea5e9"
         transparent
-        opacity={0.6}
+        opacity={0.5}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={THREE.NormalBlending}
       />
     </points>
   );
