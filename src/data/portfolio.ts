@@ -108,7 +108,7 @@ export const projects = [
     metrics: [
       { label: "mIoU Improvement", value: "~55% → ~90%" },
       { label: "Models Tested", value: "5+" },
-      { label: "Conference", value: "ICRA 2026" },
+      { label: "Conference", value: "ICRA 2026 ✓" },
     ],
     links: {
       github: "#",
