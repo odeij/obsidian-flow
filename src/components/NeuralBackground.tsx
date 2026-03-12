@@ -71,11 +71,11 @@ function Particles({ count = 500, mouse }: { count?: number; mouse: React.Mutabl
       </bufferGeometry>
       <pointsMaterial
         size={0.03}
-        color="#7c3aed"
+        color="#0ea5e9"
         transparent
-        opacity={0.6}
+        opacity={0.5}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={THREE.NormalBlending}
       />
     </points>
   );
@@ -112,7 +112,7 @@ function ConnectionLines({ count = 100, mouse }: { count?: number; mouse: React.
 
   return (
     <lineSegments ref={linesRef} geometry={geometry}>
-      <lineBasicMaterial color="#7c3aed" transparent opacity={0.15} />
+      <lineBasicMaterial color="#0ea5e9" transparent opacity={0.1} />
     </lineSegments>
   );
 }
