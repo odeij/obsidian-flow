@@ -202,7 +202,7 @@ function PointCloudCore({
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.8, 1]} />
         <meshBasicMaterial 
-          color="#1a1a1f"
+          color="#e4e4e7"
           transparent
           opacity={0.3}
           wireframe
