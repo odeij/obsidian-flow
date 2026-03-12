@@ -135,7 +135,7 @@ export default function NeuralBackground() {
       <Canvas
         camera={{ position: [0, 0, 8], fov: 60 }}
         gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
+        style={{ background: 'hsl(210, 20%, 98%)' }}
       >
         <ambientLight intensity={0.5} />
         <Particles count={400} mouse={mouse} />
