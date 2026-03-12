@@ -245,7 +245,7 @@ function PointCloudCore({
         </bufferGeometry>
         <pointsMaterial
           size={0.035}
-          color="#d4d4d8"
+          color="#64748b"
           transparent
           opacity={0.85}
           sizeAttenuation
