@@ -33,7 +33,7 @@ export default function Education() {
           className="mb-16"
         >
           <span className="text-sm font-mono text-primary uppercase tracking-widest">
-            05 — Education
+            07 — Education
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mt-4 mb-6">
             Academic Foundation

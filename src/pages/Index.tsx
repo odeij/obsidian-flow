@@ -54,6 +54,7 @@ const Index = () => {
               <Projects />
               <Experience />
               <Skills />
+              <Publications />
               <Education />
               <Contact />
             </main>
