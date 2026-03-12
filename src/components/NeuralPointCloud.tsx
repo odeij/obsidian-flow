@@ -164,12 +164,12 @@ function PointCloudCore({
           // Faint emissive white/gray lines
           const alpha = (1 - dist / CONNECTION_DISTANCE) * 0.4;
           
-          lineColorsAttr[idx] = 0.7;
-          lineColorsAttr[idx + 1] = 0.7;
-          lineColorsAttr[idx + 2] = 0.75;
-          lineColorsAttr[idx + 3] = 0.7 * alpha;
-          lineColorsAttr[idx + 4] = 0.7 * alpha;
-          lineColorsAttr[idx + 5] = 0.75 * alpha;
+          lineColorsAttr[idx] = 0.4;
+          lineColorsAttr[idx + 1] = 0.5;
+          lineColorsAttr[idx + 2] = 0.6;
+          lineColorsAttr[idx + 3] = 0.4 * alpha;
+          lineColorsAttr[idx + 4] = 0.5 * alpha;
+          lineColorsAttr[idx + 5] = 0.6 * alpha;
           
           lineIndex++;
         }
@@ -202,7 +202,7 @@ function PointCloudCore({
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.8, 1]} />
         <meshBasicMaterial 
-          color="#1a1a1f"
+          color="#e4e4e7"
           transparent
           opacity={0.3}
           wireframe
@@ -245,7 +245,7 @@ function PointCloudCore({
         </bufferGeometry>
         <pointsMaterial
           size={0.035}
-          color="#d4d4d8"
+          color="#64748b"
           transparent
           opacity={0.85}
           sizeAttenuation
