@@ -33,7 +33,7 @@ export default function Education() {
           className="mb-16"
         >
           <span className="text-sm font-mono text-primary uppercase tracking-widest">
-            05 — Education
+            07 — Education
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mt-4 mb-6">
             Academic Foundation
@@ -74,6 +74,10 @@ export default function Education() {
                   `}>
                     {edu.logo === '42' ? (
                       <span className="text-xl font-bold text-primary">42</span>
+                    ) : edu.logo === 'utc' ? (
+                      <span className="text-sm font-bold text-primary">UTC</span>
+                    ) : edu.logo === 'aub' ? (
+                      <span className="text-sm font-bold text-primary">AUB</span>
                     ) : (
                       <GraduationCap className="w-6 h-6 text-primary" />
                     )}

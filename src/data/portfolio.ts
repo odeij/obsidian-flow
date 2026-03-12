@@ -11,7 +11,7 @@ export const personalInfo = {
 
 export const stats = [
   { label: "Years Coding", value: "3+", suffix: "" },
-  { label: "Research Papers", value: "1", suffix: " submitted" },
+  { label: "Research Papers", value: "1", suffix: " accepted" },
   { label: "Projects Shipped", value: "10", suffix: "+" },
   { label: "Technologies", value: "15", suffix: "+" },
 ];
@@ -57,7 +57,7 @@ export const experiences = [
     period: "Feb 2025 - Present",
     type: "Research",
     achievements: [
-      "First author of HINT-3D, a human-in-the-loop test-time adaptation framework for 3D semantic segmentation, submitted to ICRA 2026",
+      "First author of HINT-3D, a human-in-the-loop test-time adaptation framework for 3D semantic segmentation, accepted at ICRA 2026",
       "Designed backbone-agnostic test-time adaptation system enabling inference-time model updates from sparse human feedback",
       "Achieved segmentation gains (mIoU ~55%→~90%) by integrating PointSAM for 3D error correction",
       "Built scalable CV pipelines in PyTorch and Open3D for large-scale point cloud inference",
@@ -101,14 +101,14 @@ export const projects = [
     id: 1,
     title: "HINT-3D",
     subtitle: "Human-in-the-Loop 3D Segmentation",
-    description: "Test-time adaptation framework enabling real-time 3D semantic segmentation improvements through sparse human feedback. Submitted to ICRA 2026.",
+    description: "Test-time adaptation framework enabling real-time 3D semantic segmentation improvements through sparse human feedback. Accepted at ICRA 2026.",
     category: "Research",
     image: "hint3d",
     technologies: ["PyTorch", "Open3D", "PointSAM", "Docker"],
     metrics: [
       { label: "mIoU Improvement", value: "~55% → ~90%" },
       { label: "Models Tested", value: "5+" },
-      { label: "Conference", value: "ICRA 2026" },
+      { label: "Conference", value: "ICRA 2026 ✓" },
     ],
     links: {
       github: "#",
@@ -189,6 +189,20 @@ export const projects = [
 
 export const education = [
   {
+    institution: "American University of Beirut",
+    degree: "MSc, Electrical & Computer Engineering (ECE)",
+    period: "Jan 2026 - 2028",
+    description: "Focus on computer vision, machine learning, embedded systems, 3D segmentation, and deep learning.",
+    logo: "aub",
+  },
+  {
+    institution: "Université de Technologie de Compiègne (UTC)",
+    degree: "Research Masters, Robotics & Intelligent Systems",
+    period: "Apr 2026 - 2027",
+    description: "Focus on autonomous systems, perception, and control.",
+    logo: "utc",
+  },
+  {
     institution: "Ecole 42",
     degree: "Software Engineering",
     period: "May 2025 - Present",
@@ -201,6 +215,17 @@ export const education = [
     period: "Oct 2022 - Feb 2025",
     description: "Foundation in computer science fundamentals, algorithms, and software development.",
     logo: "liu",
+  },
+];
+
+export const publications = [
+  {
+    title: "HINT-3D: Human-in-the-Loop Interactive Test-Time Adaptation for 3D Segmentation",
+    authors: "Odei Jamaleddine (First Author)",
+    venue: "IEEE ICRA 2026",
+    status: "Accepted",
+    description: "Designed a backbone-agnostic TTA framework enabling safe inference-time updates from sparse human feedback.",
+    link: "https://doi.org/10.5281/zenodo.18491843",
   },
 ];
 
