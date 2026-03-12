@@ -189,6 +189,20 @@ export const projects = [
 
 export const education = [
   {
+    institution: "American University of Beirut",
+    degree: "MSc, Electrical & Computer Engineering (ECE)",
+    period: "Jan 2026 - 2028",
+    description: "Focus on computer vision, machine learning, embedded systems, 3D segmentation, and deep learning.",
+    logo: "aub",
+  },
+  {
+    institution: "Université de Technologie de Compiègne (UTC)",
+    degree: "Research Masters, Robotics & Intelligent Systems",
+    period: "Apr 2026 - 2027",
+    description: "Focus on autonomous systems, perception, and control.",
+    logo: "utc",
+  },
+  {
     institution: "Ecole 42",
     degree: "Software Engineering",
     period: "May 2025 - Present",
@@ -201,6 +215,17 @@ export const education = [
     period: "Oct 2022 - Feb 2025",
     description: "Foundation in computer science fundamentals, algorithms, and software development.",
     logo: "liu",
+  },
+];
+
+export const publications = [
+  {
+    title: "HINT-3D: Human-in-the-Loop Interactive Test-Time Adaptation for 3D Segmentation",
+    authors: "Odei Jamaleddine (First Author)",
+    venue: "IEEE ICRA 2026",
+    status: "Accepted",
+    description: "Designed a backbone-agnostic TTA framework enabling safe inference-time updates from sparse human feedback.",
+    link: "https://doi.org/10.5281/zenodo.18491843",
   },
 ];
 
