@@ -6,6 +6,7 @@ import About from '@/components/About';
 import Projects from '@/components/Projects';
 import Experience from '@/components/Experience';
 import Skills from '@/components/Skills';
+import Publications from '@/components/Publications';
 import Education from '@/components/Education';
 import Contact from '@/components/Contact';
 import ScrollProgress from '@/components/ScrollProgress';
