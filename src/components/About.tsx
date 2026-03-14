@@ -1,9 +1,27 @@
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { stats } from '@/data/portfolio';
 import { Cpu, Eye, Brain, Zap } from 'lucide-react';
 
 const iconMap = [Cpu, Eye, Brain, Zap];
+
+const timelineItems = [
+  {
+    year: '2022',
+    title: 'Started the Journey',
+    description: 'Began Computer Science studies at Lebanese International University, diving deep into algorithms and systems.',
+  },
+  {
+    year: '2025',
+    title: 'Research Breakthrough',
+    description: "Joined AUB's Vision & Robotics Lab, working on cutting-edge 3D segmentation and human-AI collaboration.",
+  },
+  {
+    year: 'Now',
+    title: 'Building the Future',
+    description: 'Leading ML development at MarksmanAI while contributing to academic research at ICRA.',
+  },
+];
 
 function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
   const ref = useRef(null);
@@ -19,9 +37,7 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
       className="group relative"
     >
       <div className="relative p-6 rounded-2xl glass-panel hover:border-primary/30 transition-all duration-300 hover-lift">
-        {/* Glow effect on hover */}
         <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-        
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -31,7 +47,6 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
               {stat.label}
             </span>
           </div>
-          
           <div className="flex items-baseline gap-1">
             <motion.span
               initial={{ opacity: 0 }}
@@ -49,9 +64,69 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
   );
 }
 
+function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
+  const isLeft = index % 2 === 0;
+
+  return (
+    <div ref={ref} className="relative flex items-center" style={{ minHeight: '120px' }}>
+      {/* Left side content */}
+      <div className="w-5/12 flex justify-end pr-8 md:pr-12">
+        {isLeft && (
+          <motion.div
+            initial={{ opacity: 0, x: -60 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-all duration-300 hover-lift text-right"
+          >
+            <span className="text-xs font-mono text-primary uppercase tracking-wider">{item.year}</span>
+            <h3 className="text-lg font-semibold mt-1 mb-2 text-foreground">{item.title}</h3>
+            <p className="text-sm text-muted-foreground">{item.description}</p>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Center dot */}
+      <div className="relative z-10 flex items-center justify-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={isInView ? { scale: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+        />
+      </div>
+
+      {/* Right side content */}
+      <div className="w-5/12 pl-8 md:pl-12">
+        {!isLeft && (
+          <motion.div
+            initial={{ opacity: 0, x: 60 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-all duration-300 hover-lift"
+          >
+            <span className="text-xs font-mono text-primary uppercase tracking-wider">{item.year}</span>
+            <h3 className="text-lg font-semibold mt-1 mb-2 text-foreground">{item.title}</h3>
+            <p className="text-sm text-muted-foreground">{item.description}</p>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function About() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const timelineRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: timelineRef,
+    offset: ['start 80%', 'end 60%'],
+  });
+
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   return (
     <section id="about" className="section-padding relative">
@@ -84,48 +159,22 @@ export default function About() {
           ))}
         </div>
 
-        {/* Timeline narrative */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="relative"
-        >
-          <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent" />
-          
-          <div className="pl-8 space-y-8">
-            {[
-              {
-                year: '2022',
-                title: 'Started the Journey',
-                description: 'Began Computer Science studies at Lebanese International University, diving deep into algorithms and systems.',
-              },
-              {
-                year: '2025',
-                title: 'Research Breakthrough',
-                description: 'Joined AUB\'s Vision & Robotics Lab, working on cutting-edge 3D segmentation and human-AI collaboration.',
-              },
-              {
-                year: 'Now',
-                title: 'Building the Future',
-                description: 'Leading ML development at MarksmanAI while contributing to academic research at ICRA.',
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, x: -20 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.6 + index * 0.15, duration: 0.5 }}
-                className="relative"
-              >
-                <div className="absolute -left-8 top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
-                <span className="text-xs font-mono text-primary uppercase tracking-wider">{item.year}</span>
-                <h3 className="text-xl font-semibold mt-1 mb-2">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
-              </motion.div>
+        {/* Timeline */}
+        <div ref={timelineRef} className="relative">
+          {/* Static faint line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-border/30" />
+          {/* Animated growing line */}
+          <motion.div
+            className="absolute left-1/2 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-primary via-primary/70 to-primary/30"
+            style={{ height: lineHeight }}
+          />
+
+          <div className="space-y-12 py-8">
+            {timelineItems.map((item, index) => (
+              <TimelineNode key={item.year} item={item} index={index} />
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
