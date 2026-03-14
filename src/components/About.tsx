@@ -70,9 +70,17 @@ function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: n
   const isLeft = index % 2 === 0;
 
   return (
-    <div ref={ref} className="relative flex items-center" style={{ minHeight: '120px' }}>
+    <div ref={ref} className="relative flex items-start" style={{ minHeight: '120px' }}>
+      {/* Center dot - absolutely positioned on the line */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={isInView ? { scale: 1 } : {}}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute left-1/2 top-4 -translate-x-1/2 z-10 w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+      />
+
       {/* Left side content */}
-      <div className="w-5/12 flex justify-end pr-8 md:pr-12">
+      <div className="w-1/2 flex justify-end pr-8 md:pr-12">
         {isLeft && (
           <motion.div
             initial={{ opacity: 0, x: -60 }}
@@ -87,18 +95,8 @@ function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: n
         )}
       </div>
 
-      {/* Center dot */}
-      <div className="relative z-10 flex items-center justify-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={isInView ? { scale: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
-        />
-      </div>
-
       {/* Right side content */}
-      <div className="w-5/12 pl-8 md:pl-12">
+      <div className="w-1/2 pl-8 md:pl-12">
         {!isLeft && (
           <motion.div
             initial={{ opacity: 0, x: 60 }}
