@@ -80,9 +80,8 @@ function TimelineNode({ item, index, totalItems, scrollProgress }: { item: typeo
     <div className="relative flex items-start" style={{ minHeight: '120px' }}>
       {/* Center dot */}
       <motion.div
-        style={{ scale }}
-        className="absolute top-4 z-10 w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
         style={{ scale, left: '50%', marginLeft: '-8px' }}
+        className="absolute top-4 z-10 w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
       />
 
       {/* Left side content */}
