@@ -1,5 +1,5 @@
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useInView, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { useRef, useState } from 'react';
 import { stats } from '@/data/portfolio';
 import { Cpu, Eye, Brain, Zap } from 'lucide-react';
 
