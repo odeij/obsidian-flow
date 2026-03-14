@@ -142,9 +142,8 @@ export default function NeuralBackground() {
         <ConnectionLines count={80} mouse={mouse} />
       </Canvas>
       
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
+      {/* Clean white background - no colored overlays */}
+      <div className="absolute inset-0 bg-background pointer-events-none" />
     </div>
   );
 }
