@@ -64,18 +64,23 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
   );
 }
 
-function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: number }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
+function TimelineNode({ item, index, totalItems, scrollProgress }: { item: typeof timelineItems[0]; index: number; totalItems: number; scrollProgress: any }) {
   const isLeft = index % 2 === 0;
+  
+  // Each node has a threshold based on its position
+  const threshold = (index + 0.5) / totalItems;
+  const nodeProgress = useTransform(scrollProgress, [Math.max(0, threshold - 0.15), threshold], [0, 1]);
+  
+  const opacity = useTransform(nodeProgress, [0, 1], [0, 1]);
+  const xLeft = useTransform(nodeProgress, [0, 1], [-60, 0]);
+  const xRight = useTransform(nodeProgress, [0, 1], [60, 0]);
+  const scale = useTransform(nodeProgress, [0, 1], [0, 1]);
 
   return (
-    <div ref={ref} className="relative flex items-start" style={{ minHeight: '120px' }}>
-      {/* Center dot - absolutely positioned on the line */}
+    <div className="relative flex items-start" style={{ minHeight: '120px' }}>
+      {/* Center dot */}
       <motion.div
-        initial={{ scale: 0 }}
-        animate={isInView ? { scale: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        style={{ scale }}
         className="absolute left-1/2 top-4 -translate-x-1/2 z-10 w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
       />
 
@@ -83,10 +88,8 @@ function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: n
       <div className="w-1/2 flex justify-end pr-8 md:pr-12">
         {isLeft && (
           <motion.div
-            initial={{ opacity: 0, x: -60 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-all duration-300 hover-lift text-right"
+            style={{ opacity, x: xLeft }}
+            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-colors duration-300 hover-lift text-right"
           >
             <span className="text-xs font-mono text-primary uppercase tracking-wider">{item.year}</span>
             <h3 className="text-lg font-semibold mt-1 mb-2 text-foreground">{item.title}</h3>
@@ -99,10 +102,8 @@ function TimelineNode({ item, index }: { item: typeof timelineItems[0]; index: n
       <div className="w-1/2 pl-8 md:pl-12">
         {!isLeft && (
           <motion.div
-            initial={{ opacity: 0, x: 60 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-all duration-300 hover-lift"
+            style={{ opacity, x: xRight }}
+            className="glass-panel p-5 rounded-2xl max-w-sm hover:border-primary/30 transition-colors duration-300 hover-lift"
           >
             <span className="text-xs font-mono text-primary uppercase tracking-wider">{item.year}</span>
             <h3 className="text-lg font-semibold mt-1 mb-2 text-foreground">{item.title}</h3>
