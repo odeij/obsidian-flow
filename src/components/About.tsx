@@ -170,7 +170,7 @@ export default function About() {
 
           <div className="space-y-12 py-8">
             {timelineItems.map((item, index) => (
-              <TimelineNode key={item.year} item={item} index={index} />
+              <TimelineNode key={item.year} item={item} index={index} totalItems={timelineItems.length} scrollProgress={scrollYProgress} />
             ))}
           </div>
         </div>
