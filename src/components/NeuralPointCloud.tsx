@@ -297,9 +297,8 @@ export default function NeuralPointCloud() {
         <PointCloudCore mouse={mouse} scrollProgress={scrollProgress} />
       </Canvas>
 
-      {/* Subtle gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/40 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none" />
+      {/* Clean light overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-white/80 pointer-events-none" />
     </div>
   );
 }
