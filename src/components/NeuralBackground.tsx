@@ -71,11 +71,11 @@ function Particles({ count = 500, mouse }: { count?: number; mouse: React.Mutabl
       </bufferGeometry>
       <pointsMaterial
         size={0.03}
-        color="#0ea5e9"
+        color="#7c3aed"
         transparent
-        opacity={0.5}
+        opacity={0.6}
         sizeAttenuation
-        blending={THREE.NormalBlending}
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );
@@ -112,7 +112,7 @@ function ConnectionLines({ count = 100, mouse }: { count?: number; mouse: React.
 
   return (
     <lineSegments ref={linesRef} geometry={geometry}>
-      <lineBasicMaterial color="#0ea5e9" transparent opacity={0.1} />
+      <lineBasicMaterial color="#7c3aed" transparent opacity={0.15} />
     </lineSegments>
   );
 }
@@ -135,15 +135,16 @@ export default function NeuralBackground() {
       <Canvas
         camera={{ position: [0, 0, 8], fov: 60 }}
         gl={{ antialias: true, alpha: true }}
-        style={{ background: 'hsl(210, 20%, 98%)' }}
+        style={{ background: 'transparent' }}
       >
         <ambientLight intensity={0.5} />
         <Particles count={400} mouse={mouse} />
         <ConnectionLines count={80} mouse={mouse} />
       </Canvas>
       
-      {/* Clean white background - no colored overlays */}
-      <div className="absolute inset-0 bg-background pointer-events-none" />
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
     </div>
   );
 }

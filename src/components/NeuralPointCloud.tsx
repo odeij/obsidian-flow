@@ -164,12 +164,12 @@ function PointCloudCore({
           // Faint emissive white/gray lines
           const alpha = (1 - dist / CONNECTION_DISTANCE) * 0.4;
           
-          lineColorsAttr[idx] = 0.4;
-          lineColorsAttr[idx + 1] = 0.5;
-          lineColorsAttr[idx + 2] = 0.6;
-          lineColorsAttr[idx + 3] = 0.4 * alpha;
-          lineColorsAttr[idx + 4] = 0.5 * alpha;
-          lineColorsAttr[idx + 5] = 0.6 * alpha;
+          lineColorsAttr[idx] = 0.7;
+          lineColorsAttr[idx + 1] = 0.7;
+          lineColorsAttr[idx + 2] = 0.75;
+          lineColorsAttr[idx + 3] = 0.7 * alpha;
+          lineColorsAttr[idx + 4] = 0.7 * alpha;
+          lineColorsAttr[idx + 5] = 0.75 * alpha;
           
           lineIndex++;
         }
@@ -202,7 +202,7 @@ function PointCloudCore({
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.8, 1]} />
         <meshBasicMaterial 
-          color="#e4e4e7"
+          color="#1a1a1f"
           transparent
           opacity={0.3}
           wireframe
@@ -245,7 +245,7 @@ function PointCloudCore({
         </bufferGeometry>
         <pointsMaterial
           size={0.035}
-          color="#64748b"
+          color="#d4d4d8"
           transparent
           opacity={0.85}
           sizeAttenuation
@@ -297,8 +297,9 @@ export default function NeuralPointCloud() {
         <PointCloudCore mouse={mouse} scrollProgress={scrollProgress} />
       </Canvas>
 
-      {/* Clean light overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-white/80 pointer-events-none" />
+      {/* Subtle gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/40 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none" />
     </div>
   );
 }

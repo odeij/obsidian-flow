@@ -63,7 +63,7 @@ export default function CustomCursor() {
 
       {/* Trailing cursor */}
       <motion.div
-        className="fixed top-0 left-0 w-10 h-10 rounded-full pointer-events-none z-[9998] border border-foreground/15"
+        className="fixed top-0 left-0 w-10 h-10 rounded-full pointer-events-none z-[9998] border border-white/20"
         animate={{
           x: mousePosition.x - 20,
           y: mousePosition.y - 20,
